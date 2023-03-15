@@ -2,15 +2,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <signal.h>
+#include <stdbool.h>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <Windows.h>
+#else
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <unistd.h>
-#include <signal.h>
+#include <sys/types.h>
+#endif
 
-#define ARGC 7
+#define ARG_SIZE 7
 
 #define OPTION_HOST "-h"
 #define OPTION_PORT "-p"
@@ -21,23 +29,21 @@
 #define COLOR_RESET "\033[0m"
 
 #define BUF_SIZE 1024
+#define PORT_SIZE 65536
 
 #define DEBUG 1
-
-#define TCP 1
-#define UDP 2
 
 int socketfd;
 
 struct req_t {
-    uint8_t opcode;
-    uint8_t msg_size;
+    int opcode;
+    int msg_size;
     size_t payload_size;
 };
 
 struct res_t {
-    uint8_t opcode;
-    uint8_t status;
+    int opcode;
+    int status;
 };
 
 void exit_with_message(const char* message, ...) {
@@ -48,7 +54,12 @@ void exit_with_message(const char* message, ...) {
     printf("\n");
     va_end(args);
     send(socketfd, "\n", 1, 0);
+#ifdef _WIN32
+    closesocket(socketfd);
+    WSACleanup();
+#else
     close(socketfd);
+#endif
     exit(EXIT_FAILURE);
 }
 
@@ -63,20 +74,39 @@ void debug(const char* message, ...) {
     va_end(args);
 }
 
-void interupt_upd() {
+#ifdef _WIN32
+BOOL WINAPI interupt_udp(DWORD signal) {
+    switch (signal) {
+    case CTRL_C_EVENT:
+        closesocket(socketfd);
+        WSACleanup();
+        exit(0);
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+
+BOOL WINAPI interupt_tcp(DWORD signal) {
+    send(socketfd, "\n", 1, 0);
+    return interupt_udp(signal);
+}
+#else
+void interupt_udp() {
     close(socketfd);
     exit(EXIT_SUCCESS);
 }
 
 void interupt_tcp() {
     send(socketfd, "\n", 1, 0);
-    interupt_upd();
-}
 
+    interupt_udp();
+}
+#endif
 struct req_t encode(char* buf, char* msg) {
-    uint8_t opcode = 0;
-    uint8_t len = strlen(msg);
-    uint8_t payload_len = len + 1;
+    int opcode = 0;
+    int len = strlen(msg);
+    int payload_len = len + 1;
 
     memcpy(&buf[0], &opcode, sizeof(opcode));
     memcpy(&buf[1], &payload_len, sizeof(payload_len));
@@ -86,10 +116,10 @@ struct req_t encode(char* buf, char* msg) {
 }
 
 struct res_t decode(char* buf, char* msg) {
-    uint8_t opcode = msg[0];
-    uint8_t status = msg[1];
-    uint8_t  payload_len = msg[2];
-    
+    int opcode = msg[0];
+    int status = msg[1];
+    int  payload_len = msg[2];
+
     memcpy(buf, &msg[3], payload_len);
     buf[payload_len] = '\0';
 
@@ -97,16 +127,21 @@ struct res_t decode(char* buf, char* msg) {
 }
 
 int main(int argc, char** argv) {
-    if (argc != ARGC) {
+    if (argc != ARG_SIZE) {
         exit_with_message("Usage %s -h <host> -p <port> -m <mode>", argv[0]);
     }
 
     char host[255];
     char mode[255];
-    unsigned port;
+    int port;
+
+#ifdef _WIN32
+    WSADATA wsa;
+#endif
 
     debug("Reading arguments...");
-    for (int i = 1; i < ARGC; i += 2) {
+    
+    for (int i = 1; i < ARG_SIZE; i += 2) {
         if (strcmp(argv[i], OPTION_HOST) == 0) {
             debug("host: %s", argv[i + 1]);
             strcpy(host, argv[i + 1]);
@@ -123,6 +158,26 @@ int main(int argc, char** argv) {
             exit_with_message("Unknown command %s", argv[i]);
         }
     }
+
+    if (port < 0 || port > PORT_SIZE) {
+        exit_with_message("Port must be in interval 0-%d", PORT_SIZE);
+    }
+
+
+    debug("Register SIGINT...");
+
+#ifdef _WIN32
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        exit_with_message("Unable to startup windows socket API");
+    }
+    if (SetConsoleCtrlHandler((PHANDLER_ROUTINE)(strcmp(mode, "tcp") == 0 ? interupt_tcp : interupt_udp), TRUE) == FALSE) {
+        exit_with_message("Could not set console control handler");
+    }
+#else
+    if (signal(SIGINT, strcmp(mode, "tcp") == 0 ? interupt_tcp : interupt_udp) == SIG_ERR) {
+        exit_with_message("Unable to register SIGINT");
+    }
+#endif
 
     debug("Setting up server conection...");
 
@@ -148,7 +203,7 @@ int main(int argc, char** argv) {
     }
 
     if (socketfd < 0) {
-        exit_with_message("Unable to create socket.");
+        exit_with_message("Unable to open socket.");
     }
 
     debug("Connecting to the server...");
@@ -157,30 +212,26 @@ int main(int argc, char** argv) {
         exit_with_message("Connection failed");
     }
 
-    debug("Register SIGINT...");
-
-    if (signal(SIGINT, strcmp(mode, "tcp") == 0 ? interupt_tcp : interupt_upd) == SIG_ERR) {
-        exit_with_message("Unable to register SIGINT");
-    }
-
     debug("Client has been connected successfuly. You can start typing");
-
-    char buf[BUF_SIZE];
-
+    
     while (1) {
+
+        char buf[BUF_SIZE] = { '\0' };
         char raw_request[BUF_SIZE] = { '\0' };
         char raw_response[BUF_SIZE] = { '\0' };
 
+        fgets(raw_request, sizeof(raw_request), stdin);
 
-        char* user_input = fgets(raw_request, sizeof(raw_request), stdin);
+#ifdef _WIN32
+        Sleep(100);
+#endif
 
-        ssize_t send_bytes;
+        int send_bytes;
         struct req_t req;
         if (strcmp(mode, "tcp") == 0) {
             send_bytes = send(socketfd, raw_request, strlen(raw_request), 0);
         }
         else {
-
             req = encode(buf, raw_request);
             send_bytes = sendto(socketfd, buf, req.payload_size, 0, (struct sockaddr*)&server_addr, serverlen);
         }
@@ -189,7 +240,7 @@ int main(int argc, char** argv) {
             exit_with_message("Unable to send request");
         }
 
-        ssize_t recv_bytes;
+        int recv_bytes;
         struct res_t res;
         if (strcmp(mode, "tcp") == 0) {
             recv_bytes = recv(socketfd, raw_response, BUF_SIZE, 0);
@@ -203,7 +254,7 @@ int main(int argc, char** argv) {
             exit_with_message("Unable to recieve response");
         }
 
-        
+
         if (strcmp(mode, "tcp") == 0) {
             printf("%s\b", raw_response);
 
@@ -222,9 +273,15 @@ int main(int argc, char** argv) {
                 printf("Unexpected response message\n");
             }
         }
+
     }
 
+#ifdef _WIN32
+    closesocket(socketfd);
+    WSACleanup();
+#else 
     close(socketfd);
+#endif
 
     return EXIT_SUCCESS;
 }

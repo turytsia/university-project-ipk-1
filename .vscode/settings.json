@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "unistd.h": "c",
+        "ws2tcpip.h": "c",
+        "types.h": "c",
+        "ipkcpc.h": "c",
+        "sockets.h": "c",
+        "common.h": "c"
+    }
+}

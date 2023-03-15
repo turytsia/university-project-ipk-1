@@ -5,6 +5,9 @@
         "types.h": "c",
         "ipkcpc.h": "c",
         "sockets.h": "c",
-        "common.h": "c"
+        "common.h": "c",
+        "cstdlib": "c",
+        "args.h": "c",
+        "control.h": "c"
     }
 }

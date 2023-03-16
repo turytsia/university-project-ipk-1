@@ -26,11 +26,11 @@ You can run client using following command:
 ./ipkcpc -h <host> -p <port> -m <mode>
 ```
 
-`-h` ip address of the system where server is running
-`-p` port of the server
-`-m` mode in which server is running
+`-h` ip address of the system where server is running<br/>
+`-p` port of the server<br/>
+`-m` mode in which server is running<br/>
 
-> **Note!**
+> **Note**<br/>
 All the options described above are **required** in order to connect to the server.
 
 Once the program started, if credentials you provided are valid, you can start typing to a server.
@@ -39,7 +39,7 @@ Once the program started, if credentials you provided are valid, you can start t
 ### Error Handling
 The client program has handlers to validate internal network errors and input data, provided by a user. If error occurs, the program will throw error message to *STDERR*, cleaning data up.  Error message has format `[ERROR]:<err-message>`. 
 
->**!!!**
+>**Note**<br/>
 Behaviour of the program is very similar to [telnet](https://en.wikipedia.org/wiki/Telnet), please note, it's not going to timeout if you provide invalid port or ip address for **udp** server.
 
 ### Debugging
@@ -53,7 +53,7 @@ In this mode the program will give you detailed information of what it does at e
 ### Testing
 Client is tested by over 100 auto-generated tests. File `test.sh` is a main file for testing connection, reuqests and responses from the server.
 
-> **Note!**
+> **Note** <br/>
 Testing is available only on Unix, since it's native platform for this project.
 
 Before using tests, you must configure `test.sh`:

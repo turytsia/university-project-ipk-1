@@ -4,7 +4,7 @@
  * @brief Client that can connect to any server using IPv4 ip, port and mode (TCP/UDP)
  * @date 2023-03-15
  *
- * @copyright Do not steal it pls (c) 2023
+ * @copyright read LICENSE
  *
  */
 
@@ -77,6 +77,7 @@ void interupt_tcp() {
 
 int main(int argc, char** argv) {
 
+    //user's help in case if parameters are incorrect
     if (argc != ARG_SIZE) {
         exit_with_message("Usage %s -h <host> -p <port> -m <mode>", argv[0]);
     }
@@ -156,6 +157,21 @@ int main(int argc, char** argv) {
 
     debug("Connecting to the server...");
 
+//timeout interval
+#ifdef _WIN32
+    DWORD timeout = 5000;
+#else
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+#endif
+
+
+    if (setsockopt(sock.socketfd, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
+        exit_with_message("setsockopt() failed");
+    }
+
+
     if (connect(sock.socketfd, (struct sockaddr*)&server_addr, sizeof(server_addr)) != 0) {
         exit_with_message("Connection failed");
     }
@@ -170,10 +186,12 @@ int main(int argc, char** argv) {
 
         fgets(raw_request, sizeof(raw_request), stdin);
 
-//syncing SIGINT
-#ifdef _WIN32
-        Sleep(100);
-#endif
+        /**
+         *@brief if user is using windows, when clicking ctrl+C will create another
+         * thread that might invoke request logic. This if prevents it.
+         */
+        if (strlen(raw_request) == 0)
+            continue;
 
         int send_bytes;
         struct req_t req;

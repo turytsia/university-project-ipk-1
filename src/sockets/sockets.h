@@ -1,3 +1,14 @@
+/**
+ *@file sockets.h
+ * @author Oleksandr Turytsia (xturyt00@stud.fit.vutbr.cz)
+ * @brief Network logic header
+ * @version 0.1
+ * @date 2023-03-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #ifndef SOCKETS_H
 #define SOCKETS_H
 
@@ -12,6 +23,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/time.h>
 #endif
 
 #include "../common/common.h"

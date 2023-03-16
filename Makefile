@@ -11,3 +11,9 @@ else
 run:
 	$(CC) $(CFLAGS) $(shell find ./* -name '*.c') -o ipkcpc
 endif
+
+clean:
+	rm ipkcpc
+
+tests:
+	./test.sh

@@ -1,3 +1,14 @@
+/**
+ *@file sockets.c
+ * @author Oleksandr Turytsia (xturyt00@stud.fit.vutbr.cz)
+ * @brief Implementation of network logic
+ * @version 0.1
+ * @date 2023-03-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "sockets.h"
 
 /**

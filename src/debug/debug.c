@@ -1,3 +1,14 @@
+/**
+ *@file debug.c
+ * @author Oleksandr Turytsia (xturyt00@stud.fit.vutbr.cz)
+ * @brief Implementation of error throws and debug
+ * @version 0.1
+ * @date 2023-03-17
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "debug.h"
 
 /**

@@ -68,7 +68,7 @@ HOST= # here should be ip address of your server
 
 Run following command in order to launch testing
 ```bash
-make test
+make tests
 ```
 
 If some tests are failed you will se following output produces by `diff` command:

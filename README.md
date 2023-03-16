@@ -87,7 +87,7 @@ Example images are here just to show client program on Linux or Windows being ab
 
 ### Useful links
 
-[Simple socket's tutor](https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html)
-[TCP vs UDP blog](https://www.lifesize.com/blog/tcp-vs-udp/)
-[Writing portable code](https://www.delphipower.xyz/guide_6/writing_portable_code.html)
+[Simple socket's tutor](https://www.cs.rpi.edu/~moorthy/Courses/os98/Pgms/socket.html)<br/>
+[TCP vs UDP blog](https://www.lifesize.com/blog/tcp-vs-udp/)<br/>
+[Writing portable code](https://www.delphipower.xyz/guide_6/writing_portable_code.html)<br/>
 [Windows. Using event objects](https://learn.microsoft.com/en-us/windows/win32/sync/using-event-objects)

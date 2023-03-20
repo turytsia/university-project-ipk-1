@@ -69,9 +69,9 @@ void interupt_udp() {
 */
 void interupt_tcp() {
     if (sock.is_active) {
-        send(sock.socketfd, "\n", 1, 0);
+        printf("BYE\n");
+        send(sock.socketfd, "BYE\n", 4, 0);
     }
-    interupt_udp();
 }
 #endif
 
@@ -163,12 +163,12 @@ int main(int argc, char** argv) {
 #else
     struct timeval timeout;
     timeout.tv_sec = 5;
-    timeout.tv_usec = 0;
+    timeout.tv_usec = 100000;
 #endif
 
 
-    if (setsockopt(sock.socketfd, SOL_SOCKET, SO_SNDTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
-        exit_with_message("setsockopt() failed");
+    if (setsockopt(sock.socketfd, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout)) < 0) {
+        exit_with_message("setsockopt failed");
     }
 
 
@@ -188,7 +188,7 @@ int main(int argc, char** argv) {
 
         /**
          *@brief if user is using windows, when clicking ctrl+C will create another
-         * thread that might invoke request logic. This if prevents it.
+         * thread that might invoke request logic. This 'if' statement prevents it.
          */
         if (strlen(raw_request) == 0)
             continue;
@@ -225,7 +225,7 @@ int main(int argc, char** argv) {
         if (args.mode == TCP) {
             printf("%s\b", raw_response);
 
-            if (strstr(raw_response, "BYE") != NULL) {
+            if (strcmp(raw_response, "BYE\n") == 0) {
                 break;
             }
         }
@@ -233,11 +233,8 @@ int main(int argc, char** argv) {
             if (res.opcode == 1 && res.status == 0) {
                 printf("OK:%s\n", buf);
             }
-            else if (res.opcode == 1 && res.status == 1) {
-                printf("ERR:%s\n", buf);
-            }
             else {
-                printf("Unexpected response message\n");
+                printf("ERR:%s\n", buf);
             }
         }
 

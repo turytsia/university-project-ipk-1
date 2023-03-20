@@ -1,9 +1,8 @@
 #!/bin/bash
 # @author xturyt00
-
-MODE=
-PORT=
-HOST=
+HOST=192.168.16.38
+PORT=2023
+MODE=udp
 
 
 TMP="./test/temp.log"
@@ -13,6 +12,29 @@ TCP_OUT=./test/tcp/out.log
 
 UDP_IN=./test/udp/in.log
 UDP_OUT=./test/udp/out.log
+
+while getopts ':h:p:m:' OPTION; do
+
+  case "$OPTION" in
+    h)
+      HOST="$OPTARG"
+      ;;
+
+    p)
+      PORT="$OPTARG"
+      ;;
+
+    m)
+      MODE="$OPTARG"
+      ;;
+
+    ?)
+      echo "Usage: $(basename $0) [-h AD.DR.ES.S] [-p PORT] [-m tcp/udp]"
+      exit 1
+      ;;
+  esac
+
+done
 
 eval make
 eval touch $TMP

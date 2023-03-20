@@ -71,7 +71,7 @@ Run following command in order to launch testing
 make tests
 ```
 
-If some tests are failed you will se following output produces by `diff` command:
+If some tests are failed you will se following output produced by `diff` command:
 ```bash
 < OK:6
 ---

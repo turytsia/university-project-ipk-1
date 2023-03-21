@@ -5,7 +5,7 @@ The program (client) is designed to connect to any TCP and UDP server. It's writ
 ### Features
 - Connects to any TCP or UDP server
 - Sends and recieves data over network
-- Handles primitive errors and exceptions
+- Handles primitive errors and exceptions, deals with invalid ports and hosts.
 
 ### Compilation
 This project can be compiled using Makefile:
@@ -27,8 +27,9 @@ You can run client using following command:
 ```
 
 `-h` ip address of the system where server is running<br/>
-`-p` port of the server<br/>
-`-m` mode in which server is running<br/>
+`-p` server's port<br/>
+`-m` mode in which server is running (tcp/udp)<br/>
+`--help` prints usage for the user<br/>
 
 > **Note**<br/>
 All the options described above are **required** in order to connect to the server.
@@ -39,8 +40,7 @@ Once the program started, if credentials you provided are valid, you can start t
 ### Error Handling
 The client program has handlers to validate internal network errors and input data, provided by a user. If error occurs, the program will throw error message to *STDERR*, cleaning data up.  Error message has format `[ERROR]:<err-message>`. 
 
->**Note**<br/>
-Behaviour of the program is very similar to [telnet](https://en.wikipedia.org/wiki/Telnet), please note, it's not going to timeout if you provide invalid port or ip address for **udp** server.
+The program works like a [telnet](https://cs.wikipedia.org/wiki/Telnet). In udp mode, for the cases when port or ip is unreachable, there is `5s` delay until timeout.
 
 ### Debugging
 You can enable DEBUG mode, by uncommenting this line in `debug.h`
@@ -48,27 +48,18 @@ You can enable DEBUG mode, by uncommenting this line in `debug.h`
 //#define DEBUG
 ```
 
-In this mode the program will give you detailed information of what it does at each step.
+In this mode the program will give you detailed information of what it does at **each section of the code**. This was done in order to prevent commenting each line of the code due to project task.
+
 
 ### Testing
-Client is tested by over 100 auto-generated tests. File `test.sh` is a main file for testing connection, reuqests and responses from the server.
+Client is tested by over 100 auto-generated tests. File `test.sh` is a main file for testing connection, sending reuqests and getting responses from the server.
 
 > **Note** <br/>
 Testing is available only on Unix, since it's native platform for this project.
 
-Before using tests, you must configure `test.sh`:
+Usage:
 ```sh
-#!/bin/bash
-# @author xturyt00
-
-MODE= # tcp or udp
-PORT= # port
-HOST= # here should be ip address of your server
-```
-
-Run following command in order to launch testing
-```bash
-make tests
+./test.sh -h <host> -p <port> -m <mode>
 ```
 
 If some tests are failed you will se following output produced by `diff` command:

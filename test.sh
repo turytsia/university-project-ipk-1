@@ -1,6 +1,6 @@
 #!/bin/bash
 # @author xturyt00
-HOST=192.168.16.38
+HOST=192.168.43.20
 PORT=2023
 MODE=udp
 
@@ -46,6 +46,7 @@ eval diff $TMP $TCP_OUT
 elif [ "$MODE" == "udp" ];
 then
 cat $UDP_IN | ./ipkcpc -h $HOST -p $PORT -m $MODE > $TMP &
+sleep 1 #in some cases we have to wait for the output to be done, because it's udp.
 PID=$!
 kill -SIGINT $PID
 eval diff $TMP $UDP_OUT

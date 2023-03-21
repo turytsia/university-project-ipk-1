@@ -14,6 +14,3 @@ endif
 
 clean:
 	rm ipkcpc
-
-tests:
-	./test.sh

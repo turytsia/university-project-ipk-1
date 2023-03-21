@@ -13,6 +13,7 @@
 #define OPTION_HOST "-h"
 #define OPTION_PORT "-p"
 #define OPTION_MODE "-m"
+#define OPTION_HELP "--help"
 
 #define ARG_SIZE 7
 #define BUF_SIZE 1024
@@ -69,9 +70,9 @@ void interupt_udp() {
 */
 void interupt_tcp() {
     if (sock.is_active) {
-        printf("BYE\n");
         send(sock.socketfd, "BYE\n", 4, 0);
     }
+    interupt_udp();
 }
 #endif
 
@@ -79,7 +80,13 @@ int main(int argc, char** argv) {
 
     //user's help in case if parameters are incorrect
     if (argc != ARG_SIZE) {
-        exit_with_message("Usage %s -h <host> -p <port> -m <mode>", argv[0]);
+        if (argc > 1 &&  strcmp(argv[1], OPTION_HELP) == 0) {
+            printf("Welcome to IPKCPC protocol\nUsage %s - h <host> -p <port> -m <mode>\n", argv[0]);
+            exit(0);
+        }
+        else {
+            exit_with_message("Write --help to get more info.", argv[0]);
+        }
     }
 
     struct args_t args;
@@ -111,6 +118,8 @@ int main(int argc, char** argv) {
         }
         else {
             exit_with_message("Unknown command %s", argv[i]);
+
+
         }
     }
 
@@ -157,7 +166,7 @@ int main(int argc, char** argv) {
 
     debug("Connecting to the server...");
 
-//timeout interval
+    //timeout interval
 #ifdef _WIN32
     DWORD timeout = 5000;
 #else
@@ -180,9 +189,9 @@ int main(int argc, char** argv) {
 
     while (1) {
 
-        char buf[BUF_SIZE] = { '\0' };
-        char raw_request[BUF_SIZE] = { '\0' };
-        char raw_response[BUF_SIZE] = { '\0' };
+        char buf[BUF_SIZE] = { 0 };
+        char raw_request[BUF_SIZE] = { 0 };
+        char raw_response[BUF_SIZE] = { 0 };
 
         fgets(raw_request, sizeof(raw_request), stdin);
 
@@ -223,7 +232,7 @@ int main(int argc, char** argv) {
         }
 
         if (args.mode == TCP) {
-            printf("%s\b", raw_response);
+            printf("%s", raw_response);
 
             if (strcmp(raw_response, "BYE\n") == 0) {
                 break;
@@ -243,4 +252,4 @@ int main(int argc, char** argv) {
     cleanup();
 
     return EXIT_SUCCESS;
-}
+    }

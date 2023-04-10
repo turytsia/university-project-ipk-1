@@ -83,7 +83,7 @@ struct res_t {
  *@note This var is global because in windows there is no way to pass this into event handler. Issue can be solved using multiple threads which is a lot more complicated than creating 1 global variable that changes once in one place.
  *
  */
-struct sock_t sock;
+extern struct sock_t sock;
 
 struct sockaddr_in server_addr_setup(struct args_t args);
 struct req_t encode(char* buf, char* msg);

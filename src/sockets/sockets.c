@@ -11,6 +11,8 @@
 
 #include "sockets.h"
 
+struct sock_t sock;
+
 /**
  *@brief Constructs server object based on program's arguments
  *

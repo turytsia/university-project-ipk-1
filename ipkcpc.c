@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
         char raw_request[BUF_SIZE] = { 0 };
         char raw_response[BUF_SIZE] = { 0 };
 
-        fgets(raw_request, sizeof(raw_request), stdin);
+        if(fgets(raw_request, sizeof(raw_request), stdin) == NULL) {}
 
         /**
          *@brief if user is using windows, when clicking ctrl+C will create another
